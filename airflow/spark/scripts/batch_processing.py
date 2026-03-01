@@ -42,7 +42,7 @@ df_clean = df_selected.filter(
     (col("identity_attack") > 0) &
     (col("insult") > 0) &
     (col("threat") > 0)
-)
+).dropDuplicates(["comment_text"])
 
 # Create silver bucket if not exists
 client = Minio(

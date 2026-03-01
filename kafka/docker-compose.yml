@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: public.ecr.aws/bitnami/zookeeper:3.8
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    
+  kafka:
+    image: public.ecr.aws/bitnami/kafka:3.6
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      # Where Kafka listens for incoming connections
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      # The address Kafka tells clients to connect 
+      # to after they initially reach the broker. 
+      # Uses kafka (the service name) so other 
+      # containers can find it by hostname.
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # Explicitly allows unencrypted connections.
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    
+
+  producer:
+    image: public.ecr.aws/bitnami/python:3.12
+    volumes:
+      - ./producer.py:/producer.py
+    depends_on:
+      kafka:
+        condition: service_healthy    
+    command: >
+      bash -c "pip install kafka-python && python /producer.py"
+  
+  consumer:
+    image: public.ecr.aws/bitnami/python:3.12
+    volumes:
+      - ./consumer.py:/consumer.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "pip install kafka-python && python /consumer.py"

@@ -72,8 +72,10 @@ services:
     volumes:
       - ./spark/jars:/opt/bitnami/spark/jars/extra # Spark doesn't include the MinIO/S3 jars by default
       - ./spark/scripts:/opt/spark/scripts
+      - ./requirements.txt:/requirements.txt
+
     command: >
-      bash -c "pip install minio && /opt/bitnami/scripts/spark/run.sh"
+      bash -c "pip install -r /requirements.txt && /opt/bitnami/scripts/spark/run.sh"
 
   spark-worker:
     image: public.ecr.aws/bitnami/spark:3.5.3
@@ -88,8 +90,9 @@ services:
     volumes:
       - ./spark/jars:/opt/bitnami/spark/jars/extra #Spark doesn't include the MinIO/S3 jars by default
       - ./spark/scripts:/opt/spark/scripts
+      - ./requirements.txt:/requirements.txt
     command: >
-      bash -c "pip install minio && /opt/bitnami/scripts/spark/run.sh"
+      bash -c "pip install -r /requirements.txt && /opt/bitnami/scripts/spark/run.sh"
 
   hive-metastore:
     image: apache/hive:4.0.0
