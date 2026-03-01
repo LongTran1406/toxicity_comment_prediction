@@ -23,3 +23,6 @@ data/
 
 # VS Code
 .vscode/
+
+# Jars
+airflow/spark/jars

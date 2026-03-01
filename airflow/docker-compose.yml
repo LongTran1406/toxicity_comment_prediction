@@ -10,6 +10,8 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   minio:
     image: quay.io/minio/minio
@@ -22,9 +24,13 @@ services:
     volumes:
       - ./minio/data:/data
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      retries: 5
 
   airflow:
-    image: apache/airflow:2.11.1
+    build: .
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,15 +43,94 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ../data:/opt/airflow/data
-      - ./requirements.txt:/requirements.txt
+      - ./spark/jars:/opt/bitnami/spark/jars/extra
+      - ./spark/scripts:/opt/spark/scripts
+      # - ./requirements.txt:/requirements.txt
     entrypoint: /bin/bash
     command:
       - -c
       - |
-        pip install -r /requirements.txt &&
         airflow db migrate &&
         airflow users create --username admin --password admin \
           --firstname admin --lastname admin --role Admin \
           --email admin@gmail.com || true
+        airflow connections add spark_default \
+          --conn-type spark \
+          --conn-host spark://spark-master \
+          --conn-port 7077 || true        
         airflow scheduler &
         airflow webserver
+
+  spark-master:
+    image: public.ecr.aws/bitnami/spark:3.5.3
+    container_name: spark-master
+    ports:
+      - "8088:8080"
+      - "7077:7077"
+    environment:
+      - "SPARK_MODE=master"
+    volumes:
+      - ./spark/jars:/opt/bitnami/spark/jars/extra # Spark doesn't include the MinIO/S3 jars by default
+      - ./spark/scripts:/opt/spark/scripts
+    command: >
+      bash -c "pip install minio && /opt/bitnami/scripts/spark/run.sh"
+
+  spark-worker:
+    image: public.ecr.aws/bitnami/spark:3.5.3
+    container_name: spark-worker-1
+    environment:
+      - "SPARK_MODE=worker"
+      - "SPARK_MASTER_URL=spark://spark-master:7077"
+      - "SPARK_WORKER_CORES=1"
+      - "SPARK_WORKER_MEMORY=1G"
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark/jars:/opt/bitnami/spark/jars/extra #Spark doesn't include the MinIO/S3 jars by default
+      - ./spark/scripts:/opt/spark/scripts
+    command: >
+      bash -c "pip install minio && /opt/bitnami/scripts/spark/run.sh"
+
+  hive-metastore:
+    image: apache/hive:4.0.0
+    container_name: hive-metastore
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+    # Tells the Hive container to start in metastore-only mode (not the full Hive server)
+      SERVICE_NAME: metastore 
+    # Which database driver to use. 
+      DB_DRIVER: postgres
+    # Java system properties string   
+    # The JDBC driver class name,  telling JDO (Java Data Objects) to use the Postgres driver
+      SERVICE_OPTS: >-
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore
+        -Djavax.jdo.option.ConnectionUserName=airflow
+        -Djavax.jdo.option.ConnectionPassword=airflow
+    ports:
+      - "9083:9083"
+    volumes:
+      - ./hive/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - ./spark/jars/postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
+      - ./spark/jars/hadoop-aws-3.3.4.jar:/opt/hive/lib/hadoop-aws-3.3.4.jar
+      - ./spark/jars/aws-java-sdk-bundle-1.12.262.jar:/opt/hive/lib/aws-java-sdk-bundle-1.12.262.jar
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9083"]
+      interval: 10s
+      retries: 10
+      start_period: 30s
+
+  trino:
+    image: trinodb/trino:435
+    container_name: trino
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./trino/etc:/etc/trino
+    depends_on:
+      hive-metastore:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
