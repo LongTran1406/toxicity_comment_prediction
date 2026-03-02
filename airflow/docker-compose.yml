@@ -12,6 +12,9 @@ services:
       retries: 5
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kafka_net
+
 
   minio:
     image: quay.io/minio/minio
@@ -28,6 +31,9 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 5s
       retries: 5
+    networks:
+      - kafka_net
+
 
   airflow:
     build: .
@@ -60,6 +66,9 @@ services:
           --conn-port 7077 || true        
         airflow scheduler &
         airflow webserver
+    networks:
+      - kafka_net
+
 
   spark-master:
     image: public.ecr.aws/bitnami/spark:3.5.3
@@ -76,6 +85,9 @@ services:
 
     command: >
       bash -c "pip install -r /requirements.txt && /opt/bitnami/scripts/spark/run.sh"
+    networks:
+      - kafka_net
+
 
   spark-worker:
     image: public.ecr.aws/bitnami/spark:3.5.3
@@ -93,6 +105,9 @@ services:
       - ./requirements.txt:/requirements.txt
     command: >
       bash -c "pip install -r /requirements.txt && /opt/bitnami/scripts/spark/run.sh"
+    networks:
+      - kafka_net
+
 
   hive-metastore:
     image: apache/hive:4.0.0
@@ -124,7 +139,9 @@ services:
       interval: 10s
       retries: 10
       start_period: 30s
-
+    networks:
+      - kafka_net
+  
   trino:
     image: trinodb/trino:435
     container_name: trino
@@ -137,3 +154,10 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    networks:
+      - kafka_net
+
+networks:
+  kafka_net:
+    external: true
+    name: kafka_shared_network

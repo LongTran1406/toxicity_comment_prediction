@@ -7,7 +7,10 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - "2181:2181"
-    
+    networks:
+      - shared_network
+
+
   kafka:
     image: public.ecr.aws/bitnami/kafka:3.6
     depends_on:
@@ -31,7 +34,8 @@ services:
       interval: 10s
       retries: 5
       start_period: 30s
-    
+    networks:
+      - shared_network    
 
   producer:
     image: public.ecr.aws/bitnami/python:3.12
@@ -42,6 +46,8 @@ services:
         condition: service_healthy    
     command: >
       bash -c "pip install kafka-python && python /producer.py"
+    networks:
+      - shared_network
   
   consumer:
     image: public.ecr.aws/bitnami/python:3.12
@@ -52,3 +58,9 @@ services:
         condition: service_healthy
     command: >
       bash -c "pip install kafka-python && python /consumer.py"
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    driver: bridge
