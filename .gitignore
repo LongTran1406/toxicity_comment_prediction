@@ -26,3 +26,4 @@ data/
 
 # Jars
 airflow/spark/jars
+flink/jars
