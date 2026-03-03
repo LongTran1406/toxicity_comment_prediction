@@ -1,1 +1,4 @@
 CREATE DATABASE metastore;
+
+CREATE USER "user" WITH PASSWORD 'password'; 
+CREATE DATABASE mlflowdb;

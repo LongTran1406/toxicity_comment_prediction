@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  mlflow:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # Use the specific MLflow user/db created in init.sql
+      MLFLOW_BACKEND_STORE_URI: postgresql://user:password@postgres:5432/mlflowdb
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password123
+    volumes:
+      - ./train.py:/train.py
+      - ./data_cleaning.py:/data_cleaning.py
+      - ./main.py:/main.py
+      - ./text_processor.py:/text_processor.py
+      - ./inference_test.py:/inference_test.py
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://user:password@postgres:5432/mlflowdb
+      --default-artifact-root s3://mlflow-artifacts
+    networks:
+      - kafka_net
+
+networks:
+  kafka_net:
+    external: true
+    name: kafka_shared_network

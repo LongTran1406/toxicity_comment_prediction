@@ -1,0 +1,5 @@
+pandas
+pyarrow
+nltk
+seaborn
+minio

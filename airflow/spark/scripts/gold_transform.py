@@ -40,7 +40,6 @@ df_gold = df_silver.select(
         length(regexp_replace("comment_text", "!", ""))
     ).alias("exclamation_count"),
     col("toxicity"),
-    when(col("toxicity") > 0.5, 1).otherwise(0).alias("is_toxic"),
     current_timestamp().alias("feature_timestamp")
 )
 spark.sql("CREATE DATABASE IF NOT EXISTS hive_catalog.gold")

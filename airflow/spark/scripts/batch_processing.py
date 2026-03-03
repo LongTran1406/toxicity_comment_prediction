@@ -35,13 +35,13 @@ df_selected = df.select(
 )
 
 df_clean = df_selected.filter(
-    (col("toxicity") > 0) &
-    (col("severe_toxicity") > 0) &
-    (col("obscene") > 0) &
-    (col("sexual_explicit") > 0) &
-    (col("identity_attack") > 0) &
-    (col("insult") > 0) &
-    (col("threat") > 0)
+    (col("toxicity") >= 0) &
+    (col("severe_toxicity") >= 0) &
+    (col("obscene") >= 0) &
+    (col("sexual_explicit") >= 0) &
+    (col("identity_attack") >= 0) &
+    (col("insult") >= 0) &
+    (col("threat") >= 0)
 ).dropDuplicates(["comment_text"])
 
 # Create silver bucket if not exists

@@ -27,3 +27,6 @@ data/
 # Jars
 airflow/spark/jars
 flink/jars
+
+# Ml folder
+ml/postgres-data

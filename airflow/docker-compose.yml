@@ -161,3 +161,6 @@ networks:
   kafka_net:
     external: true
     name: kafka_shared_network
+
+volumes:
+  postgres_data:
