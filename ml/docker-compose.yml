@@ -22,6 +22,7 @@ services:
       --port 5000
       --backend-store-uri postgresql://user:password@postgres:5432/mlflowdb
       --default-artifact-root s3://mlflow-artifacts
+      --allowed-hosts "*"
     networks:
       - kafka_net
 

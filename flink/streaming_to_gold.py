@@ -18,6 +18,7 @@ class FeatureExtractor(MapFunction):
         toxic_word_count = int("stupid" in message.lower())
 
         self.r.hset(f"comment:{id}", mapping={
+            "comment_text": message,
             "comment_length": comment_length,
             "uppercase_ratio": uppercase_ratio,
             "exclamation_count": exclamation_count,
@@ -33,7 +34,7 @@ t_env = StreamTableEnvironment.create(env, environment_settings=settings)
 
 t_env.execute_sql("""
     CREATE TABLE kafka_source (
-        id INT,
+        id STRING,
         user_id STRING,
         message STRING,
         ts TIMESTAMP(3),

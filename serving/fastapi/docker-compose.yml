@@ -1,0 +1,21 @@
+services:
+  fastapi:
+    build: .
+    ports:
+      - "8001:8000"
+    networks:
+      - kafka_net
+    volumes:
+      - ./app.py:/app.py
+      - ./feature_store.py:/feature_store.py
+      # - ../../ml/text_processor.py:/text_processor.py
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password123
+
+networks:
+  kafka_net:
+    external: true
+    name: kafka_shared_network

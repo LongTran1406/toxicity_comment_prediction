@@ -45,13 +45,47 @@ services:
     networks:
       - kafka_net
 
-  redis:
-      image: redis:7.0-alpine
-      container_name: redis
-      ports:
-        - "6379:6379"
+  flink-job-submitter:
+      build: .
+      container_name: flink-job-submitter
+      depends_on:
+        - jobmanager
+        - taskmanager
+      volumes:
+        - ./streaming_to_gold.py:/opt/flink/streaming_to_gold.py
+      command: >
+        bash -c "
+          echo 'Waiting for jobmanager...' &&
+          until curl -s http://jobmanager:8081/overview > /dev/null 2>&1; do
+            echo 'Jobmanager not ready, retrying in 5s...' &&
+            sleep 5;
+          done &&
+          echo 'Jobmanager is ready, submitting job...' &&
+          flink run --detached -py /opt/flink/streaming_to_gold.py &&
+          echo 'Job submitted successfully'
+        "
+      environment:
+        - AWS_ACCESS_KEY_ID=admin
+        - AWS_SECRET_ACCESS_KEY=password123
+        - |
+          FLINK_PROPERTIES=
+          jobmanager.rpc.address: jobmanager
+          rest.address: jobmanager
+          rest.port: 8081
+          s3.endpoint: http://minio:9000
+          s3.access-key: admin
+          s3.secret-key: password123
+          s3.path.style.access: true
       networks:
         - kafka_net
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kafka_net
 
 networks:
   kafka_net:

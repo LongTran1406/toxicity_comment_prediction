@@ -55,6 +55,8 @@ class Training:
                     lambda x: 1 if x >= threshold else 0
                 )
                 print(X.shape)
+                print(y.value_counts())
+                print(y.describe())
 
                 X_train_val, X_test, y_train_val, y_test = train_test_split(
                     X, y, test_size=0.2, stratify=y, random_state=42
