@@ -75,6 +75,6 @@ def predict(user_id: str, message: str, max_wait: int = 10):
 
     return {
         "comment_id": comment_id,
-        "toxicity_label": int(prediction),
+        "toxicity_label": int(prediction) + 1,
         "toxicity_probability": float(probability)
     }
