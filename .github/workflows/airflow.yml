@@ -1,0 +1,54 @@
+name: Airflow DAGs CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "airflow/dags/**"
+      - "airflow/spark/**"
+      - "airflow/docker-compose.yml"
+      - "airflow/requirements.txt"
+
+jobs:
+  deploy-dags:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup SSH key
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+
+      # 3. Copy DAGs to VM
+      - name: Copy DAGs to VM
+        run: |
+          rsync -avz --delete \
+            airflow/dags/ \
+            ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/project/airflow/dags/
+
+      # 4. Copy Spark scripts to VM
+      - name: Copy Spark scripts to VM
+        run: |
+          rsync -avz --delete \
+            airflow/spark/scripts/ \
+            ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/project/airflow/spark/scripts/
+
+      # 5. Restart Airflow
+      - name: Restart Airflow
+        run: |
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} \
+            "cd ~/project/airflow && docker compose restart airflow"
+
+      # 6. Verify Airflow is up
+      - name: Verify Airflow
+        run: |
+          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} \
+            "docker ps | grep airflow"

@@ -1,0 +1,57 @@
+name: FastAPI CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "serving/fastapi/**"
+      - "k8s/01-fastapi.yaml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Login to ACR
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: toxicityregistry2026.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # 3. Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./serving/fastapi
+          push: true
+          tags: |
+            toxicityregistry2026.azurecr.io/fastapi-custom:latest
+            toxicityregistry2026.azurecr.io/fastapi-custom:${{ github.sha }}
+
+      # 4. Set up kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      # 5. Configure kubeconfig
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+
+      # 6. Deploy to AKS
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f k8s/01-fastapi.yaml
+          kubectl rollout restart deployment fastapi -n data-platform
+
+      # 7. Verify rollout
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment fastapi -n data-platform --timeout=120s
