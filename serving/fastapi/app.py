@@ -15,7 +15,6 @@ app = FastAPI(title="Toxicity Prediction API")
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
 
-
 REQUEST_COUNTER = Counter(
     "api_requests_total",
     "The number of requests to the fastapi",
