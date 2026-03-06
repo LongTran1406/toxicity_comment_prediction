@@ -17,17 +17,28 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "9093:9093"
+    # environment:
+    #   - KAFKA_BROKER_ID=1
+    #   - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    #   # Where Kafka listens for incoming connections
+    #   - KAFKA_LISTENERS=PLAINTEXT://:9092
+    #   # The address Kafka tells clients to connect 
+    #   # to after they initially reach the broker. 
+    #   # Uses kafka (the service name) so other 
+    #   # containers can find it by hostname.
+    #   - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    #   # Explicitly allows unencrypted connections.
+    #   - ALLOW_PLAINTEXT_LISTENER=yes
+
+    # need to change depend
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      # Where Kafka listens for incoming connections
-      - KAFKA_LISTENERS=PLAINTEXT://:9092
-      # The address Kafka tells clients to connect 
-      # to after they initially reach the broker. 
-      # Uses kafka (the service name) so other 
-      # containers can find it by hostname.
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      # Explicitly allows unencrypted connections.
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,EXTERNAL://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://192.168.1.6:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
       - ALLOW_PLAINTEXT_LISTENER=yes
     healthcheck:
       test: ["CMD", "kafka-topics.sh", "--list", "--bootstrap-server", "localhost:9092"]

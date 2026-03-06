@@ -9,8 +9,21 @@ import json
 from datetime import datetime
 import time
 import uuid
+from prometheus_client import Counter, Histogram, make_asgi_app
 
 app = FastAPI(title="Toxicity Prediction API")
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
+
+REQUEST_COUNTER = Counter(
+    "api_requests_total",
+    "The number of requests to the fastapi",
+)
+
+REQUEST_LATENCY = Histogram(
+    "request_latency",
+    "Latency of prediction (seconds)"
+)
 
 mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000"))
 model = mlflow.sklearn.load_model("models:/MultinomialNB/Production")
@@ -23,6 +36,10 @@ producer = KafkaProducer(
 
 @app.post("/predict")
 def predict(user_id: str, message: str, max_wait: int = 10):
+
+    REQUEST_COUNTER.inc()
+    start = time.time()
+
     # 1. Auto-generate comment_id
     comment_id = str(uuid.uuid4())[:8]  # short unique id
 
@@ -38,11 +55,11 @@ def predict(user_id: str, message: str, max_wait: int = 10):
 
     # 3. Wait for Flink to process and write to Redis
     features = None
-    for _ in range(max_wait):
+    for _ in range(max_wait * 20):
         features = get_features(comment_id)
         if features is not None:
             break
-        time.sleep(1)
+        time.sleep(0.05)
 
     if features is None:
         return {"error": f"comment not processed after {max_wait}s"}
@@ -51,6 +68,10 @@ def predict(user_id: str, message: str, max_wait: int = 10):
     input_series = pd.Series([features["comment_text"]])
     prediction = model.predict(input_series)[0]
     probability = model.predict_proba(input_series)[0][1]
+
+    REQUEST_LATENCY.observe(
+        time.time() - start
+    )
 
     return {
         "comment_id": comment_id,

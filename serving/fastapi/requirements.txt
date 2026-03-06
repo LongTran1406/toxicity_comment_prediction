@@ -6,3 +6,4 @@ pandas
 redis
 boto3
 kafka-python
+prometheus-client
