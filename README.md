@@ -114,8 +114,48 @@ docker compose up -d
 ```bash
 curl -X POST "http://localhost:8000/predict?user_id=user123&message=you+are+so+handsome"
 ```
+#### Example output
+```bash
+{"comment_id":"f4b94a62","toxicity_label":0,"toxicity_probability":0.339546749165074}
+```
 
 ### Local K8S setup
+#### Point to minikube docker
+```bash
+minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
+
+#### Build image
+```bash
+cd serving/fastapi
+docker build -t fastapi-custom:latest .
+```
+
+#### Deploy
+```bash
+kubectl apply -f k8s/00-secrets.yaml
+kubectl apply -f k8s/01-fastapi.yaml
+```
+
+#### See running pod status (optional)
+```bash
+minikube service fastapi -n data-platform
+```
+
+#### Rollout the update
+```bash
+kubectl rollout restart deployment/fastapi -n data-platform
+```
+
+#### Export the port 
+```bash
+kubectl port-forward svc/fastapi 8000:8000 -n data-platform
+```
+
+#### Send request
+```bash
+Invoke-WebRequest -Method POST "http://localhost:8000/predict?user_id=testuser1&message=you+are+so+stupid+and+ugly" -UseBasicParsing | Select-Object -ExpandProperty Content
+```
 
 # Cloud
 ## Deploying to Azure
