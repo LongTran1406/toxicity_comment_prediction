@@ -61,12 +61,12 @@ A production-grade machine learning system for real-time toxicity comment predic
 │   ├── docker-compose.yml
 │   └── prometheus.yml
 ├── serving
-│   └── fastapi
-│       ├── Dockerfile
-│       ├── app.py
-│       ├── docker-compose.yml
-│       ├── feature_store.py
-│       └── text_processor.py
+    └── fastapi
+        ├── Dockerfile
+        ├── app.py
+        ├── docker-compose.yml
+        ├── feature_store.py
+        └── text_processor.py
 ```
 
 # Local
