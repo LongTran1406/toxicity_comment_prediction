@@ -86,6 +86,33 @@ cd flink && docker compose up -d
 
 # Start MLflow
 cd ml && docker compose up -d
+
+# Start monitoring
+cd monitoring && docker compose up -d
+```
+
+#### Train and register the model
+```bash
+cd ml
+docker "container_name" exec -it python main.py
+```
+This trains the model and registers it to MLflow. Then promote it to Production
+
+```bash
+curl -X POST http://localhost:5000/api/2.0/mlflow/model-versions/transition-stage \
+  -H "Content-Type: application/json" \
+  -d '{"name": "MultinomialNB", "version": "1", "stage": "Production"}'
+```
+
+#### Start FastAPI
+```bash
+cd serving/fastapi
+docker compose up -d
+```
+
+#### Test API
+```bash
+curl -X POST "http://localhost:8000/predict?user_id=user123&message=you+are+so+handsome"
 ```
 
 ### Local K8S setup
