@@ -12,7 +12,7 @@ A production-grade machine learning system for real-time toxicity comment predic
 - **CI/CD** — GitHub Actions for automated build, push to ACR, and deploy to AKS
 
 ## Overall System Architecture
-<div style="text-align: center;"> <img src="images\System_Diagram.png" style="width: 1188px; height: auto;"></div>
+<div style="text-align: center;"> <img src="images\System_Diagram.jpg" style="width: 1188px; height: auto;"></div>
 
 
 # Table of Contents
