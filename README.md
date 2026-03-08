@@ -1,65 +1,22 @@
-# toxicity_comment_prediction
-nyc-taxi-feature-store/
-├── airflow/
-├── spark/
-├── flink/
-├── kafka/
-├── feature_store/
-├── training/
-├── serving/
-│   ├── fastapi/
-│   ├── docker-compose.yml
-│   └── k8s/
-├── monitoring/
-│   ├── prometheus/
-│   ├── grafana/
-│   └── jaeger/
-├── jenkins/
-├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_processing.ipynb
-│   ├── 03_modeling.ipynb
-│   └── 04_prepare_deploy.ipynb
-└── README.md
+# Sentiment Classifier ML System
 
-----------
+## Introduction
+A production-grade machine learning system for real-time toxicity comment prediction. The system ingests comments via a REST API, processes them through a real-time feature pipeline, and returns toxicity predictions using a trained classifier registered in MLflow.
 
-PHASE 2 – BATCH INGESTION (MINIO – BRONZE)
-🎯 Mục tiêu phase 2
+## Overall System Architecture
+<div style="text-align: center;"> <img src="images\System_Diagram.png" style="width: 1188px; height: auto;"></div>
 
-Lấy NYC Taxi (sample nhỏ)
 
-Đưa vào MinIO
+# Table of Contents
 
-Chạy bằng Airflow
+## Project Structure
 
-Lưu dạng Parquet
+# Local
+## Demo
 
-📁 Cấu trúc repo (tối thiểu)
+### Running in docker-compose
+### Local K8S setup
 
-airflow/
-├── dags/
-│   └── ingest_taxi_to_minio.py
-├── docker-compose.yml
-└── requirements.txt
-
-data/
-└── yellow_tripdata_sample.csv
-
-PHASE 3 – SPARK BATCH PROCESSING (BASIC)
-🎯 Mục tiêu phase 3
-
-Dùng Apache Spark
-
-Đọc dữ liệu Bronze (MinIO)
-
-Clean dữ liệu tối thiểu
-
-Tạo vài feature đơn giản
-
-Ghi ra Silver Zone
-
-spark/
-├── batch_to_silver.py
-└── docker-compose.yml  
+# Cloud
+## Deploying to Azure
 
