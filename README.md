@@ -3,12 +3,28 @@
 ## Introduction
 A production-grade machine learning system for real-time toxicity comment prediction. The system ingests comments via a REST API, processes them through a real-time feature pipeline, and returns toxicity predictions using a trained classifier registered in MLflow.
 
+- **Real-time prediction** — sub-second toxicity scoring via REST API
+- **Streaming feature pipeline** — Kafka → Flink → Redis for online feature serving
+- **Batch data pipeline** — Airflow + Spark for bronze → silver → gold data transformation
+- **Experiment tracking** — MLflow for model versioning and registry
+- **Cloud-native serving** — FastAPI deployed on AKS with auto-scaling
+- **Observability** — Prometheus + Grafana for API and infrastructure monitoring
+- **CI/CD** — GitHub Actions for automated build, push to ACR, and deploy to AKS
+
 ## Overall System Architecture
 <div style="text-align: center;"> <img src="images\System_Diagram.png" style="width: 1188px; height: auto;"></div>
 
 
 # Table of Contents
-[Overall System Architecture](#overall-system-architecture)
+- [Introduction](#introduction)
+- [Overall System Architecture](#overall-system-architecture)
+- [Project Structure](#project-structure)
+- [Local](#local)
+  - [Demo](#demo)
+  - [Running in Docker Compose](#running-in-docker-compose)
+  - [Local K8S Setup](#local-k8s-setup)
+- [Cloud](#cloud)
+  - [Deploying to Azure](#deploying-to-azure)
 
 ## Project Structure
 ```txt
