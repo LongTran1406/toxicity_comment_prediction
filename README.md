@@ -120,3 +120,46 @@ curl -X POST "http://localhost:8000/predict?user_id=user123&message=you+are+so+h
 # Cloud
 ## Deploying to Azure
 
+### Create AKS cluster and ACR
+```bash
+az group create --name data-platform-rg --location southeastasia
+
+az acr create --resource-group data-platform-rg \
+  --name toxicityregistry2026 --sku Basic
+
+az aks create --resource-group data-platform-rg \
+  --name data-platform-cluster \
+  --attach-acr toxicityregistry2026
+```
+
+### Create namespace and secrets
+```bash
+kubectl create namespace data-platform
+
+kubectl create secret generic fastapi-secrets \
+  --from-literal=AWS_ACCESS_KEY_ID=<minio-access-key> \
+  --from-literal=AWS_SECRET_ACCESS_KEY=<minio-secret-key> \
+  -n data-platform
+```
+
+### Build and push image to ACR
+```bash
+az acr build --registry toxicityregistry2026 \
+  --image fastapi-custom:latest serving/fastapi/
+```
+
+### Deploy to AKS
+```bash
+kubectl apply -f k8s/00-secrets.yaml
+kubectl apply -f k8s/01-fastapi.yaml
+```
+
+### Get external IP
+```bash
+kubectl get service fastapi -n data-platform
+```
+
+### Test the API
+```bash
+curl -X POST "http://<EXTERNAL-IP>:8000/predict?user_id=user123&message=you+are+so+stupid"
+```
