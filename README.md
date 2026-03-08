@@ -8,13 +8,86 @@ A production-grade machine learning system for real-time toxicity comment predic
 
 
 # Table of Contents
+[Overall System Architecture](#overall-system-architecture)
 
 ## Project Structure
+```txt
+├── .github
+│   └── workflows
+│       ├── airflow.yml
+│       └── fastapi.yml
+├── airflow
+│   ├── Dockerfile
+│   ├── dags
+│   │   ├── batch_processing.py
+│   │   ├── ingest_data_to_minio.py
+│   │   ├── silver_data_validation.py
+│   │   └── silver_to_gold.py
+│   ├── docker-compose.yml
+│   ├── hive
+│   ├── minio
+│   │   └── data
+│   ├── postgres
+│   ├── spark
+│   │   └── scripts
+│   │       ├── batch_processing.py
+│   │       ├── data_validation.py
+│   │       └── gold_transform.py
+│   └── trino
+│       └── etc
+│           └── catalog
+├── data
+├── flink
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── streaming_to_gold.py
+├── k8s
+│   ├── 00-secrets.yaml
+│   ├── 01-fastapi-local.yaml
+│   └── 01-fastapi.yaml
+├── kafka
+│   ├── consumer.py
+│   ├── docker-compose.yml
+│   └── producer.py
+├── ml
+│   ├── Dockerfile
+│   ├── data_cleaning.py
+│   ├── docker-compose.yml
+│   ├── inference_test.py
+│   ├── main.py
+│   ├── text_processor.py
+│   └── train.py
+├── monitoring
+│   ├── docker-compose.yml
+│   └── prometheus.yml
+├── serving
+│   └── fastapi
+│       ├── Dockerfile
+│       ├── app.py
+│       ├── docker-compose.yml
+│       ├── feature_store.py
+│       └── text_processor.py
+```
 
 # Local
 ## Demo
 
-### Running in docker-compose
+### Running in docker-compos
+####  Start all services 
+```bash
+# Start data platform (Airflow, Spark, MinIO, Hive, Trino)
+cd airflow && docker compose up -d
+
+# Start Kafka
+cd kafka && docker compose up -d
+
+# Start Flink feature store
+cd flink && docker compose up -d
+
+# Start MLflow
+cd ml && docker compose up -d
+```
+
 ### Local K8S setup
 
 # Cloud
