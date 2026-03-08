@@ -1,4 +1,4 @@
-# Sentiment Classifier ML System
+# Sentinex: Sentiment Classifier ML System
 
 ## Introduction
 A production-grade machine learning system for real-time toxicity comment prediction. The system ingests comments via a REST API, processes them through a real-time feature pipeline, and returns toxicity predictions using a trained classifier registered in MLflow.
