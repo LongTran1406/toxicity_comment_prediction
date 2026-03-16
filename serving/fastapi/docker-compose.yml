@@ -7,7 +7,7 @@ services:
       - kafka_net
     volumes:
       - ./app.py:/app.py
-      - ./feature_store.py:/feature_store.py
+      # - ./feature_store.py:/feature_store.py
       # - ../../ml/text_processor.py:/text_processor.py
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000

@@ -30,7 +30,7 @@ df_cleaned = cleaner.run()
 # Train
 trainer = Training(
     df=df_cleaned,
-    thresholds=[0.5],
+    thresholds=[0.15],
     tracking_uri="http://localhost:5000"
 )
 

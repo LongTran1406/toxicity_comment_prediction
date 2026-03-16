@@ -4,10 +4,10 @@ metadata:
   name: fastapi-env
   namespace: data-platform
 data:
-  MLFLOW_TRACKING_URI: "http://10.0.0.4:5000"
-  MLFLOW_S3_ENDPOINT_URL: "http://10.0.0.4:9000"
-  REDIS_HOST: "10.0.0.4"
-  KAFKA_BOOTSTRAP_SERVERS: "10.0.0.4:9093"
+  MLFLOW_TRACKING_URI: "http://40.87.28.204:5000"
+  MLFLOW_S3_ENDPOINT_URL: "http://40.87.28.204:9000"
+  REDIS_HOST: "40.87.28.204"
+  KAFKA_BOOTSTRAP_SERVERS: "40.87.28.204:9093"
 
 ---
 # ─────────────────────────────────────────────
