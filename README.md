@@ -4,7 +4,8 @@
 A production-grade machine learning system for real-time toxicity comment prediction. The system ingests comments via a REST API, processes them through a real-time feature pipeline, and returns toxicity predictions using a trained classifier registered in MLflow.
 
 - **Real-time prediction** — sub-second toxicity scoring via REST API
-- **Streaming feature pipeline** — Kafka → Flink → Redis for online feature serving
+- **Streaming feature pipeline** —  Redis for online feature serving (spam detection)
+- **Monitoring prediction** - Using Kafka for sending prediction result for data drift detection, Prometheus and Grafana for metrics monitoring 
 - **Batch data pipeline** — Airflow + Spark for bronze → silver → gold data transformation
 - **Experiment tracking** — MLflow for model versioning and registry
 - **Cloud-native serving** — FastAPI deployed on AKS with auto-scaling
@@ -53,10 +54,6 @@ A production-grade machine learning system for real-time toxicity comment predic
 │       └── etc
 │           └── catalog
 ├── data
-├── flink
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── streaming_to_gold.py
 ├── k8s
 │   ├── 00-secrets.yaml
 │   ├── 01-fastapi-local.yaml
@@ -76,13 +73,16 @@ A production-grade machine learning system for real-time toxicity comment predic
 ├── monitoring
 │   ├── docker-compose.yml
 │   └── prometheus.yml
+├── redis
+│   └── docker-compose.yml
 ├── serving
-    └── fastapi
-        ├── Dockerfile
-        ├── app.py
-        ├── docker-compose.yml
-        ├── feature_store.py
-        └── text_processor.py
+│   └── fastapi
+│       ├── Dockerfile
+│       ├── app.py
+│       ├── docker-compose.yml
+│       ├── fastapi-env.yaml
+│       └── text_processor.py
+└── test.py
 ```
 
 # Local
@@ -97,8 +97,8 @@ cd airflow && docker compose up -d
 # Start Kafka
 cd kafka && docker compose up -d
 
-# Start Flink feature store
-cd flink && docker compose up -d
+# Start Redis feature store
+cd redis && docker compose up -d
 
 # Start MLflow
 cd ml && docker compose up -d
